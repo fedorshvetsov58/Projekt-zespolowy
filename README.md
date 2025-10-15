@@ -1,28 +1,47 @@
-    Mini CRUD Projekt - Zadania
+# 📝 Mini CRUD Projekt - Zadania
 
-To mój mini-projekt CRUD dla zadań w Flask + SQLite.  
-Można dodawać, edytować, usuwać i oglądać zadania w przeglądarce.
+Mały projekt napisany w **Flask + SQLite**.  
+Pozwala **dodawać, edytować, usuwać i przeglądać zadania** przez prostą stronę w przeglądarce.
 
-
-    Wymagania:
-
+# Wymagania
 - Python 3.11+
 - Flask
-- SQLite (wbudowana w Python, więc nie trzeba nic instalować dodatkowo)
+- SQLite (wbudowany w Pythona)
 
-
-    Jak uruchomić:
-
-Sklonuj repo, stwórz wirtualne środowisko, zainstaluj wymagania, utwórz bazę i uruchom aplikację (Windows/Linux/Mac):
+# Jak uruchomić
 
 ```bash
+# 1. Pobierz projekt
 git clone https://github.com/twojlogin/projekt-CRUD-zadania.git
 cd projekt-CRUD-zadania
+
+# 2. Utwórz i włącz środowisko
 python -m venv venv
-# Windows
-if defined WINDIR (call venv\Scripts\activate)
-# Linux / Mac
-if not defined WINDIR (source venv/bin/activate)
+venv\Scripts\activate    # Windows
+source venv/bin/activate # Linux / Mac
+
+# 3. Zainstaluj wymagania
 pip install -r requirements.txt
+
+# 4. Utwórz bazę danych
 python database.py
+
+# 5. Uruchom aplikację
 python app.py
+Wejdź w przeglądarce na http://127.0.0.1:5000
+
+Co można robić:
+- Dodać zadanie
+- Edytować zadanie
+- Usunąć zadanie
+- Zobaczyć listę zadań
+
+ API
+Metoda	Endpoint	Opis
+GET	/api/zadania	Wszystkie zadania
+POST	/api/zadania	Dodaj zadanie
+PUT	/api/zadania/<id>	Edytuj zadanie
+DELETE	/api/zadania/<id>	Usuń zadanie
+
+Autor: Twoje imię / nick
+Projekt edukacyjny – Flask + SQLite CRUD
