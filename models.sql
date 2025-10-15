@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS zadania (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tytul TEXT NOT NULL,
+    opis TEXT NOT NULL,
+    deadline TEXT NOT NULL,
+    priorytet TEXT NOT NULL
+);
