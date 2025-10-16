@@ -12,7 +12,7 @@ Pozwala **dodawać, edytować, usuwać i przeglądać zadania** przez prostą st
 
 ```bash
 # 1. Pobierz projekt
-git clone https://github.com/twojlogin/projekt-CRUD-zadania.git
+git clone https://github.com/fedorshvetsov58/projekt-CRUD-zadania.git
 cd projekt-CRUD-zadania
 
 # 2. Utwórz i włącz środowisko
@@ -43,5 +43,5 @@ POST	/api/zadania	Dodaj zadanie
 PUT	/api/zadania/<id>	Edytuj zadanie
 DELETE	/api/zadania/<id>	Usuń zadanie
 
-Autor: Twoje imię / nick
+Autor: Fedir Shvetsov 66805
 Projekt edukacyjny – Flask + SQLite CRUD
