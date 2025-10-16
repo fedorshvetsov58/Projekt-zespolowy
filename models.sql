@@ -3,5 +3,7 @@ CREATE TABLE IF NOT EXISTS zadania (
     tytul TEXT NOT NULL,
     opis TEXT NOT NULL,
     deadline TEXT NOT NULL,
-    priorytet TEXT NOT NULL
+    priorytet TEXT NOT NULL,
+    status TEXT DEFAULT 'open',
+    estimated_time REAL
 );

@@ -16,7 +16,9 @@
           <strong>${z.tytul}</strong> (${z.priorytet})<br>
           ${z.opis}<br>
           Termin: ${z.deadline}<br>
-          <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}')">Edytuj</button>
+          Status: ${z.status}<br>
+          Estimated time: ${z.estimated_time} h<br>
+          <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}', '${z.status}', ${z.estimated_time})">Edytuj</button>
           <button onclick="deleteZadanie(${z.id})">Usuń</button>
         </li>
       `).join('');
@@ -27,27 +29,29 @@
       const opis = document.getElementById('opis').value;
       const deadline = document.getElementById('deadline').value;
       const priorytet = document.getElementById('priorytet').value;
+      const status = document.getElementById('status').value;
+      const estimated_time = parseFloat(document.getElementById('estimated_time').value);
 
       if (!tytul || !opis || !deadline || !priorytet) {
         alert("Wypełnij wszystkie pola!");
         return;
       }
 
+      const payload = { tytul, opis, deadline, priorytet, status, estimated_time };
+
       if (editingId) {
-        // tryb edycji
         await fetch('/api/zadania/' + editingId, {
           method: 'PUT',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ tytul, opis, deadline, priorytet })
+          body: JSON.stringify(payload)
         });
         editingId = null;
         document.getElementById('addBtn').innerText = "Dodaj";
       } else {
-        // tryb dodawania
         await fetch('/api/zadania', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ tytul, opis, deadline, priorytet })
+          body: JSON.stringify(payload)
         });
       }
 
@@ -55,11 +59,13 @@
       loadZadania();
     }
 
-    function editZadanie(id, tytul, opis, deadline, priorytet) {
+    function editZadanie(id, tytul, opis, deadline, priorytet, status, estimated_time) {
       document.getElementById('tytul').value = tytul;
       document.getElementById('opis').value = opis;
       document.getElementById('deadline').value = deadline;
       document.getElementById('priorytet').value = priorytet;
+      document.getElementById('status').value = status;
+      document.getElementById('estimated_time').value = estimated_time;
       document.getElementById('addBtn').innerText = "Zapisz zmiany";
       editingId = id;
     }
@@ -74,6 +80,8 @@
       document.getElementById('opis').value = '';
       document.getElementById('deadline').value = '';
       document.getElementById('priorytet').value = '';
+      document.getElementById('status').value = '';
+      document.getElementById('estimated_time').value = '';
     }
 
     window.onload = loadZadania;
@@ -88,7 +96,8 @@
   <input id="opis" placeholder="Opis">
   <input id="deadline" type="date">
   <input id="priorytet" placeholder="Priorytet (np. wysoki)">
+  <input id="status" placeholder="Status (open/in progress/done)">
+  <input id="estimated_time" type="number" step="0.1" placeholder="Estimated time (h)">
   <button id="addBtn" onclick="addZadanie()">Dodaj</button>
 </body>
 </html>
-

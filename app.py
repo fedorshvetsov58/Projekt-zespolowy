@@ -3,7 +3,6 @@ from database import get_db_connection, init_db
 
 app = Flask(__name__)
 
-
 with app.app_context():
     init_db()
 
@@ -33,10 +32,14 @@ def create_zadanie():
     required = ['tytul', 'opis', 'deadline', 'priorytet']
     if not all(field in data for field in required):
         return jsonify({'error': 'Brakuje pól'}), 400
+
+    status = data.get('status', 'open')
+    estimated_time = data.get('estimated_time', None)
+
     conn = get_db_connection()
     cur = conn.execute(
-        'INSERT INTO zadania (tytul, opis, deadline, priorytet) VALUES (?, ?, ?, ?)',
-        (data['tytul'], data['opis'], data['deadline'], data['priorytet'])
+        'INSERT INTO zadania (tytul, opis, deadline, priorytet, status, estimated_time) VALUES (?, ?, ?, ?, ?, ?)',
+        (data['tytul'], data['opis'], data['deadline'], data['priorytet'], status, estimated_time)
     )
     conn.commit()
     conn.close()
@@ -49,9 +52,18 @@ def update_zadanie(id):
     zadanie = conn.execute('SELECT * FROM zadania WHERE id=?', (id,)).fetchone()
     if zadanie is None:
         return jsonify({'error': 'Zadanie nie znalezione'}), 404
+
     conn.execute(
-        'UPDATE zadania SET tytul=?, opis=?, deadline=?, priorytet=? WHERE id=?',
-        (data.get('tytul'), data.get('opis'), data.get('deadline'), data.get('priorytet'), id)
+        'UPDATE zadania SET tytul=?, opis=?, deadline=?, priorytet=?, status=?, estimated_time=? WHERE id=?',
+        (
+            data.get('tytul', zadanie['tytul']),
+            data.get('opis', zadanie['opis']),
+            data.get('deadline', zadanie['deadline']),
+            data.get('priorytet', zadanie['priorytet']),
+            data.get('status', zadanie['status']),
+            data.get('estimated_time', zadanie['estimated_time']),
+            id
+        )
     )
     conn.commit()
     conn.close()
@@ -70,4 +82,3 @@ def delete_zadanie(id):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
