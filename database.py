@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 def get_db_connection():
     conn = sqlite3.connect('database.db')
@@ -7,7 +8,9 @@ def get_db_connection():
 
 def init_db():
     conn = get_db_connection()
-    with open('models.sql', 'r') as f:
+
+    script_path = os.path.join(os.path.dirname(__file__), 'models.sql')
+    with open(script_path, 'r') as f:
         conn.executescript(f.read())
     conn.commit()
     conn.close()
