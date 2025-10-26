@@ -27,6 +27,18 @@
           .join("");
       }
 
+      const buttons = list.querySelectorAll("button");
+      buttons.forEach((btn) => {
+        if (
+          !token &&
+          (btn.innerText === "Edytuj" || btn.innerText === "Usuń")
+        ) {
+          btn.style.display = "none";
+        } else {
+          btn.style.display = "inline";
+        }
+      });
+
       async function addZadanie() {
         const tytul = document.getElementById("tytul").value;
         const opis = document.getElementById("opis").value;
@@ -111,6 +123,25 @@
           alert(data.error);
         }
       }
+
+      async function register() {
+        const loginVal = document.getElementById("reg_login").value;
+        const passwordVal = document.getElementById("reg_password").value;
+
+        const res = await fetch("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ login: loginVal, password: passwordVal }),
+        });
+
+        const data = await res.json();
+        if (res.status === 201) {
+          alert("Konto utworzone pomyślnie! Teraz możesz się zalogować.");
+        } else {
+          alert(data.error);
+        }
+      }
+
       window.onload = loadZadania;
     </script>
   </head>
@@ -122,6 +153,11 @@
     <input id="login" placeholder="Login" />
     <input id="password" type="password" placeholder="Hasło" />
     <button onclick="login()">Zaloguj się</button>
+
+    <h2>Rejestracja</h2>
+    <input id="reg_login" placeholder="Login" />
+    <input id="reg_password" type="password" placeholder="Hasło" />
+    <button onclick="register()">Zarejestruj się</button>
 
     <h2>Dodaj / Edytuj zadanie</h2>
     <input id="tytul" placeholder="Tytuł" />
