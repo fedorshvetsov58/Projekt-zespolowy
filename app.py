@@ -1,5 +1,8 @@
 from flask import Flask, jsonify, request, render_template
 from database import get_db_connection, init_db
+from models import hash_password
+import bcrypt
+
 
 app = Flask(__name__)
 
@@ -68,6 +71,28 @@ def delete_zadanie(id):
     conn.close()
     return jsonify({'message': 'Usunięto zadanie'}), 200
 
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    login = data.get('login')
+    password = data.get('password')
+
+    if not login or not password or len(password) < 6:
+        return jsonify({'error': 'Niepoprawny login lub hasło'}), 400
+
+    conn = get_db_connection()
+    existing = conn.execute('SELECT * FROM users WHERE login=?', (login,)).fetchone()
+    if existing:
+        conn.close()
+        return jsonify({'error': 'Login już istnieje'}), 400
+
+    hashed = hash_password(password)
+    conn.execute('INSERT INTO users (login, hasloHash) VALUES (?, ?)', (login, hashed))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Utworzono konto'}), 201
+
 if __name__ == '__main__':
     app.run(debug=True)
+
 
