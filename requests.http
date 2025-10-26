@@ -1,0 +1,29 @@
+### 1. Регистрация пользователя
+POST http://127.0.0.1:5000/register
+Content-Type: application/json
+
+{
+  "login": "testuser",
+  "password": "test123"
+}
+
+### 2. Логин и получение JWT
+POST http://127.0.0.1:5000/login
+Content-Type: application/json
+
+{
+  "login": "testuser",
+  "password": "test123"
+}
+
+### 3. Создание новой задачи (требует JWT)
+POST http://127.0.0.1:5000/api/zadania
+Content-Type: application/json
+Authorization: Bearer <ВСТАВЬ_СЮДА_ТОКЕН_ИЗ_ШАГА_2>
+
+{
+  "tytul": "Nowe zadanie",
+  "opis": "Opis zadania",
+  "deadline": "2025-10-30",
+  "priorytet": "wysoki"
+}
