@@ -5,6 +5,8 @@ import bcrypt
 import jwt
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+import sqlite3
+
 
 app = Flask(__name__)
 
