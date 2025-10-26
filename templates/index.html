@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/static/style.css" />
     <script>
       let editingId = null;
+      let token = null;
 
       async function loadZadania() {
         const res = await fetch("/api/zadania");
@@ -37,11 +38,16 @@
           return;
         }
 
+        const headers = {
+          "Content-Type": "application/json",
+        };
+        if (token) headers["Authorization"] = "Bearer " + token;
+
         if (editingId) {
           // tryb edycji
           await fetch("/api/zadania/" + editingId, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: headers,
             body: JSON.stringify({ tytul, opis, deadline, priorytet }),
           });
           editingId = null;
@@ -50,7 +56,7 @@
           // tryb dodawania
           await fetch("/api/zadania", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: headers,
             body: JSON.stringify({ tytul, opis, deadline, priorytet }),
           });
         }
@@ -69,7 +75,13 @@
       }
 
       async function deleteZadanie(id) {
-        await fetch("/api/zadania/" + id, { method: "DELETE" });
+        const headers = {};
+        if (token) headers["Authorization"] = "Bearer " + token;
+
+        await fetch("/api/zadania/" + id, {
+          method: "DELETE",
+          headers,
+        });
         loadZadania();
       }
 
@@ -80,12 +92,36 @@
         document.getElementById("priorytet").value = "";
       }
 
+      async function login() {
+        const loginVal = document.getElementById("login").value;
+        const passwordVal = document.getElementById("password").value;
+
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ login: loginVal, password: passwordVal }),
+        });
+
+        const data = await res.json();
+        if (res.status === 200) {
+          token = data.token;
+          alert("Zalogowano pomyślnie!");
+          loadZadania();
+        } else {
+          alert(data.error);
+        }
+      }
       window.onload = loadZadania;
     </script>
   </head>
   <body>
     <h1>Lista Zadań</h1>
     <ul id="zadania"></ul>
+
+    <h2>Logowanie</h2>
+    <input id="login" placeholder="Login" />
+    <input id="password" type="password" placeholder="Hasło" />
+    <button onclick="login()">Zaloguj się</button>
 
     <h2>Dodaj / Edytuj zadanie</h2>
     <input id="tytul" placeholder="Tytuł" />
