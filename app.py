@@ -35,6 +35,10 @@ def token_required(f):
 def home():
     return render_template('home.html')
 
+@app.route('/zadania')
+def zadania_page():
+    return render_template('index.html')
+
 @app.route('/api/zadania', methods=['GET'])
 def get_zadania():
     conn = get_db_connection()
