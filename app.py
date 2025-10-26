@@ -3,7 +3,7 @@ from database import get_db_connection, init_db
 from models import hash_password
 import bcrypt
 import jwt
-import datetime
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 app = Flask(__name__)
@@ -134,7 +134,7 @@ def login():
 
     token = jwt.encode({
         'user_id': user['id'],
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+        'exp': datetime.now(timezone.utc) + timedelta(hours=1)
     }, SECRET_KEY, algorithm='HS256')
 
     return jsonify({'token': token})
