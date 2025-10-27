@@ -17,8 +17,8 @@ password: "test123"
 
 ```bash
 # 1. Pobierz projekt
-git clone https://github.com/fedorshvetsov58/projekt-CRUD-zadania.git
-cd projekt-CRUD-zadania
+git clone https://github.com/fedorshvetsov58/Projekt-zespolowy.git
+cd Projekt-zespolowy
 
 # 2. Utwórz i włącz środowisko
 python -m venv venv
