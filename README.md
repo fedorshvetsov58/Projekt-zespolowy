@@ -2,6 +2,11 @@
 
 Mały projekt napisany w **Flask + SQLite**.  
 Pozwala **dodawać, edytować, usuwać i przeglądać zadania** przez prostą stronę w przeglądarce.
+Link: https://loys.pythonanywhere.com/
+
+Konto testowe:
+login: "testuser"
+password: "test123"
 
 # Wymagania
 - Python 3.11+
