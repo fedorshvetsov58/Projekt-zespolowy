@@ -2,29 +2,24 @@
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Strona główna</title>
+    <title>Zarządzanie Zadaniami</title>
     <link rel="stylesheet" href="/static/home.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Witaj w aplikacji „Zarządzanie Zadaniami”</h1>
-      <p>
-        To prosta aplikacja napisana w <strong>Flask + SQLite</strong> do
-        tworzenia, edycji i usuwania codziennych zadań.
-      </p>
+    <div class="page-background">
+      <div class="container">
+        <h1>Zarządzanie Zadaniami</h1>
+        <p class="subtitle">
+          Prosta aplikacja do organizacji Twoich codziennych zadań.
+        </p>
 
-      <h2>Autor projektu</h2>
-      <p><strong>Fedir Shvetsov</strong><br />Nr albumu: 66805</p>
+        <div class="author">
+          <h2>Autor projektu</h2>
+          <p><strong>Fedir Shvetsov</strong><br />Nr albumu: 66805</p>
+        </div>
 
-      <h2>Funkcje aplikacji</h2>
-      <ul>
-        <li>Rejestracja i logowanie użytkownika</li>
-        <li>Ochrona endpointów JWT</li>
-        <li>CRUD zadań (dodaj, edytuj, usuń, przeglądaj)</li>
-        <li>Strona publiczna dostępna bez logowania</li>
-      </ul>
-
-      <a href="/zadania"><button>Przejdź do listy zadań</button></a>
+        <a href="/zadania" class="btn">Przejdź do listy zadań</a>
+      </div>
     </div>
   </body>
 </html>

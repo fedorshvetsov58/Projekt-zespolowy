@@ -9,12 +9,12 @@
       let token = null;
 
       async function loadZadania() {
-        const res = await fetch("/api/zadania");
+        const res = await fetch('/api/zadania');
         const zadania = await res.json();
-        const list = document.getElementById("zadania");
+        const list = document.getElementById('zadania');
         list.innerHTML = zadania
           .map(
-            (z) => `
+            z => `
         <li>
           <strong>${z.tytul}</strong> (${z.priorytet})<br>
           ${z.opis}<br>
@@ -22,52 +22,52 @@
           <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}')">Edytuj</button>
           <button onclick="deleteZadanie(${z.id})">Usuń</button>
         </li>
-      `
+      `,
           )
-          .join("");
+          .join('');
       }
 
-      const buttons = list.querySelectorAll("button");
-      buttons.forEach((btn) => {
+      const buttons = list.querySelectorAll('button');
+      buttons.forEach(btn => {
         if (
           !token &&
-          (btn.innerText === "Edytuj" || btn.innerText === "Usuń")
+          (btn.innerText === 'Edytuj' || btn.innerText === 'Usuń')
         ) {
-          btn.style.display = "none";
+          btn.style.display = 'none';
         } else {
-          btn.style.display = "inline";
+          btn.style.display = 'inline';
         }
       });
 
       async function addZadanie() {
-        const tytul = document.getElementById("tytul").value;
-        const opis = document.getElementById("opis").value;
-        const deadline = document.getElementById("deadline").value;
-        const priorytet = document.getElementById("priorytet").value;
+        const tytul = document.getElementById('tytul').value;
+        const opis = document.getElementById('opis').value;
+        const deadline = document.getElementById('deadline').value;
+        const priorytet = document.getElementById('priorytet').value;
 
         if (!tytul || !opis || !deadline || !priorytet) {
-          alert("Wypełnij wszystkie pola!");
+          alert('Wypełnij wszystkie pola!');
           return;
         }
 
         const headers = {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         };
-        if (token) headers["Authorization"] = "Bearer " + token;
+        if (token) headers['Authorization'] = 'Bearer ' + token;
 
         if (editingId) {
           // tryb edycji
-          await fetch("/api/zadania/" + editingId, {
-            method: "PUT",
+          await fetch('/api/zadania/' + editingId, {
+            method: 'PUT',
             headers: headers,
             body: JSON.stringify({ tytul, opis, deadline, priorytet }),
           });
           editingId = null;
-          document.getElementById("addBtn").innerText = "Dodaj";
+          document.getElementById('addBtn').innerText = 'Dodaj';
         } else {
           // tryb dodawania
-          await fetch("/api/zadania", {
-            method: "POST",
+          await fetch('/api/zadania', {
+            method: 'POST',
             headers: headers,
             body: JSON.stringify({ tytul, opis, deadline, priorytet }),
           });
@@ -78,46 +78,46 @@
       }
 
       function editZadanie(id, tytul, opis, deadline, priorytet) {
-        document.getElementById("tytul").value = tytul;
-        document.getElementById("opis").value = opis;
-        document.getElementById("deadline").value = deadline;
-        document.getElementById("priorytet").value = priorytet;
-        document.getElementById("addBtn").innerText = "Zapisz zmiany";
+        document.getElementById('tytul').value = tytul;
+        document.getElementById('opis').value = opis;
+        document.getElementById('deadline').value = deadline;
+        document.getElementById('priorytet').value = priorytet;
+        document.getElementById('addBtn').innerText = 'Zapisz zmiany';
         editingId = id;
       }
 
       async function deleteZadanie(id) {
         const headers = {};
-        if (token) headers["Authorization"] = "Bearer " + token;
+        if (token) headers['Authorization'] = 'Bearer ' + token;
 
-        await fetch("/api/zadania/" + id, {
-          method: "DELETE",
+        await fetch('/api/zadania/' + id, {
+          method: 'DELETE',
           headers,
         });
         loadZadania();
       }
 
       function clearForm() {
-        document.getElementById("tytul").value = "";
-        document.getElementById("opis").value = "";
-        document.getElementById("deadline").value = "";
-        document.getElementById("priorytet").value = "";
+        document.getElementById('tytul').value = '';
+        document.getElementById('opis').value = '';
+        document.getElementById('deadline').value = '';
+        document.getElementById('priorytet').value = '';
       }
 
       async function login() {
-        const loginVal = document.getElementById("login").value;
-        const passwordVal = document.getElementById("password").value;
+        const loginVal = document.getElementById('login').value;
+        const passwordVal = document.getElementById('password').value;
 
-        const res = await fetch("/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ login: loginVal, password: passwordVal }),
         });
 
         const data = await res.json();
         if (res.status === 200) {
           token = data.token;
-          alert("Zalogowano pomyślnie!");
+          alert('Zalogowano pomyślnie!');
           loadZadania();
         } else {
           alert(data.error);
@@ -125,18 +125,18 @@
       }
 
       async function register() {
-        const loginVal = document.getElementById("reg_login").value;
-        const passwordVal = document.getElementById("reg_password").value;
+        const loginVal = document.getElementById('reg_login').value;
+        const passwordVal = document.getElementById('reg_password').value;
 
-        const res = await fetch("/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ login: loginVal, password: passwordVal }),
         });
 
         const data = await res.json();
         if (res.status === 201) {
-          alert("Konto utworzone pomyślnie! Teraz możesz się zalogować.");
+          alert('Konto utworzone pomyślnie! Teraz możesz się zalogować.');
         } else {
           alert(data.error);
         }
@@ -146,24 +146,69 @@
     </script>
   </head>
   <body>
-    <h1>Lista Zadań</h1>
-    <ul id="zadania"></ul>
+    <div class="page-background">
+      <div class="content-wrapper">
+        <header>
+          <div class="container">
+            <div class="header-container">
+              <img
+                src="/static/images/Logo_proj_zesp.png"
+                alt="Logo"
+                class="img-logo"
+              />
+              <h1 class="main-title">Proces uwierzytelniania</h1>
+            </div>
+          </div>
+        </header>
 
-    <h2>Logowanie</h2>
-    <input id="login" placeholder="Login" />
-    <input id="password" type="password" placeholder="Hasło" />
-    <button onclick="login()">Zaloguj się</button>
+        <main>
+          <section class="section">
+            <div class="container">
+              <div class="log-rejestr">
+                <div class="card log">
+                  <h2>Logowanie</h2>
+                  <input id="login" placeholder="Login" />
+                  <input id="password" type="password" placeholder="Hasło" />
+                  <button onclick="login()">Zaloguj się</button>
+                </div>
 
-    <h2>Rejestracja</h2>
-    <input id="reg_login" placeholder="Login" />
-    <input id="reg_password" type="password" placeholder="Hasło" />
-    <button onclick="register()">Zarejestruj się</button>
+                <div class="card rejestracja">
+                  <h2>Rejestracja</h2>
+                  <input id="reg_login" placeholder="Login" />
+                  <input
+                    id="reg_password"
+                    type="password"
+                    placeholder="Hasło"
+                  />
+                  <button onclick="register()">Zarejestruj się</button>
+                </div>
+              </div>
+            </div>
+          </section>
 
-    <h2>Dodaj / Edytuj zadanie</h2>
-    <input id="tytul" placeholder="Tytuł" />
-    <input id="opis" placeholder="Opis" />
-    <input id="deadline" type="date" />
-    <input id="priorytet" placeholder="Priorytet (np. wysoki)" />
-    <button id="addBtn" onclick="addZadanie()">Dodaj</button>
+          <section class="section">
+            <div class="container">
+              <div class="card add-zad">
+                <h2>Dodaj / Edytuj zadanie</h2>
+                <input id="tytul" placeholder="Tytuł" />
+                <input id="opis" placeholder="Opis" />
+                <input id="deadline" type="date" />
+                <input id="priorytet" placeholder="Priorytet (np. wysoki)" />
+                <button id="addBtn" onclick="addZadanie()">Dodaj</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="container">
+              <div class="card lista-zad">
+                <h2>Lista Zadań</h2>
+                <ul id="zadania"></ul>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
   </body>
 </html>
