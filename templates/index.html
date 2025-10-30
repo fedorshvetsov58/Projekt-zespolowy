@@ -8,23 +8,36 @@
       let editingId = null;
       let token = null;
 
+      function showError(message) {
+        const errorBox = document.getElementById('errorBox');
+        errorBox.innerText = message;
+        errorBox.style.display = 'block';
+        setTimeout(() => {
+          errorBox.style.display = 'none';
+        }, 4000);
+      }
+
       async function loadZadania() {
-        const res = await fetch('/api/zadania');
-        const zadania = await res.json();
-        const list = document.getElementById('zadania');
-        list.innerHTML = zadania
-          .map(
-            z => `
-        <li>
-          <strong>${z.tytul}</strong> (${z.priorytet})<br>
-          ${z.opis}<br>
-          Termin: ${z.deadline}<br>
-          <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}')">Edytuj</button>
-          <button onclick="deleteZadanie(${z.id})">Usuń</button>
-        </li>
-      `,
-          )
-          .join('');
+        try {
+          const res = await fetch('/api/zadania');
+          const zadania = await res.json();
+          const list = document.getElementById('zadania');
+          list.innerHTML = zadania
+            .map(
+              z => `
+          <li>
+            <strong>${z.tytul}</strong> (${z.priorytet})<br>
+            ${z.opis}<br>
+            Termin: ${z.deadline}<br>
+            <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}')">Edytuj</button>
+            <button onclick="deleteZadanie(${z.id})">Usuń</button>
+          </li>
+        `,
+            )
+            .join('');
+        } catch (err) {
+          showError(err.message);
+        }
       }
 
       const buttons = list.querySelectorAll('button');
@@ -46,35 +59,39 @@
         const priorytet = document.getElementById('priorytet').value;
 
         if (!tytul || !opis || !deadline || !priorytet) {
-          alert('Wypełnij wszystkie pola!');
+          showError('Wypełnij wszystkie pola!');
           return;
         }
 
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-        if (token) headers['Authorization'] = 'Bearer ' + token;
+        try {
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+          if (token) headers['Authorization'] = 'Bearer ' + token;
 
-        if (editingId) {
-          // tryb edycji
-          await fetch('/api/zadania/' + editingId, {
-            method: 'PUT',
-            headers: headers,
-            body: JSON.stringify({ tytul, opis, deadline, priorytet }),
-          });
-          editingId = null;
-          document.getElementById('addBtn').innerText = 'Dodaj';
-        } else {
-          // tryb dodawania
-          await fetch('/api/zadania', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({ tytul, opis, deadline, priorytet }),
-          });
+          if (editingId) {
+            // tryb edycji
+            await fetch('/api/zadania/' + editingId, {
+              method: 'PUT',
+              headers: headers,
+              body: JSON.stringify({ tytul, opis, deadline, priorytet }),
+            });
+            editingId = null;
+            document.getElementById('addBtn').innerText = 'Dodaj';
+          } else {
+            // tryb dodawania
+            await fetch('/api/zadania', {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({ tytul, opis, deadline, priorytet }),
+            });
+          }
+
+          clearForm();
+          loadZadania();
+        } catch (err) {
+          showError('Nie udało się zapisać zadania');
         }
-
-        clearForm();
-        loadZadania();
       }
 
       function editZadanie(id, tytul, opis, deadline, priorytet) {
@@ -120,7 +137,7 @@
           alert('Zalogowano pomyślnie!');
           loadZadania();
         } else {
-          alert(data.error);
+          showError(data.error);
         }
       }
 
@@ -138,7 +155,7 @@
         if (res.status === 201) {
           alert('Konto utworzone pomyślnie! Teraz możesz się zalogować.');
         } else {
-          alert(data.error);
+          showError(data.error);
         }
       }
 
@@ -160,6 +177,8 @@
             </div>
           </div>
         </header>
+
+        <div id="errorBox"></div>
 
         <main>
           <section class="section">
