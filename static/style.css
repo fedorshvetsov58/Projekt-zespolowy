@@ -143,7 +143,7 @@ li:hover {
   flex: 1 1 300px;
 }
 
-/* 🔹 Блок отображения ошибок */
+/* Блок отображения ошибок */
 #errorBox {
   display: none;
   background: #ffe6e6;
@@ -159,7 +159,7 @@ li:hover {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* 🔹 Анимация появления */
+/* Анимация появления */
 @keyframes fadeIn {
   from {
     opacity: 0;
