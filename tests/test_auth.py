@@ -10,15 +10,22 @@ def client():
     with app.test_client() as client:
         yield client
 
-def test_register_and_login(client):
-    # unused_log
-    login_name = f"testuser_{random.randint(1, 10000)}"
+def test_register_validation_errors(client):
+    # za krotki password
+    res = client.post("/register", json={"login": "abc", "password": "12"})
+    assert res.status_code == 422
+    assert any(err["field"] == "password" for err in res.json["fieldErrors"])
 
-    # log
-    res = client.post("/register", json={"login": login_name, "password": "123456"})
-    assert res.status_code == 201
+    # niepoprawny login (spacja)
+    res2 = client.post("/register", json={"login": "ab c", "password": "123456"})
+    assert res2.status_code == 422
+    assert any(err["field"] == "login" for err in res2.json["fieldErrors"])
 
-    # reg
-    res2 = client.post("/login", json={"login": login_name, "password": "123456"})
-    assert res2.status_code == 200
-    assert "token" in res2.json
+    # poprawny login (bez spacji i bez podkreślnika)
+    name = f"validuser{random.randint(1,1000)}"
+    res3 = client.post("/register", json={"login": name, "password": "123456"})
+    assert res3.status_code == 201
+
+    # duplikat loginu
+    res4 = client.post("/register", json={"login": name, "password": "123456"})
+    assert res4.status_code == 409

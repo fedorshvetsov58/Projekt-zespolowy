@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 from database import get_db_connection, init_db
 from models import hash_password
+import re
 import bcrypt
 import jwt
 from datetime import datetime, timedelta, timezone
@@ -99,20 +100,54 @@ def delete_zadanie(id):
     conn.close()
     return jsonify({'message': 'Usunięto zadanie'}), 200
 
+def validate_user_input(login, password):
+    field_errors = []
+
+    # login: 3-20 znaków, tylko litery i cyfry
+    if not re.match(r"^[A-Za-z0-9]{3,20}$", login or ""):
+        field_errors.append({
+            "field": "login",
+            "message": "Login może zawierać tylko litery i cyfry (3–20 znaków)",
+            "code": "INVALID_FORMAT"
+        })
+
+    # hasło: minimum 6 znaków
+    if not password or len(password) < 6:
+        field_errors.append({
+            "field": "password",
+            "message": "Hasło musi mieć co najmniej 6 znaków",
+            "code": "INVALID_LENGTH"
+        })
+
+    return field_errors
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     login = data.get('login')
     password = data.get('password')
 
-    if not login or not password or len(password) < 6:
-        return jsonify({'error': 'Niepoprawny login lub hasło'}), 400
+    field_errors = validate_user_input(login, password)
+    if field_errors:
+        return jsonify({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": 422,
+            "error": "Unprocessable Entity",
+            "fieldErrors": field_errors
+        }), 422
 
     conn = get_db_connection()
     existing = conn.execute('SELECT * FROM users WHERE login=?', (login,)).fetchone()
     if existing:
         conn.close()
-        return jsonify({'error': 'Login już istnieje'}), 400
+        return jsonify({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": 409,
+            "error": "Conflict",
+            "fieldErrors": [
+                {"field": "login", "message": "Ten login już istnieje", "code": "DUPLICATE_LOGIN"}
+            ]
+        }), 409
 
     hashed = hash_password(password)
     conn.execute('INSERT INTO users (login, hasloHash) VALUES (?, ?)', (login, hashed))
@@ -127,7 +162,12 @@ def login():
     password = data.get('password')
 
     if not login or not password:
-        return jsonify({'error': 'Nie podano loginu lub hasła'}), 400
+        return jsonify({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": 400,
+            "error": "Bad Request",
+            "message": "Nie podano loginu lub hasła"
+        }), 400
 
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE login=?', (login,)).fetchone()
@@ -136,14 +176,19 @@ def login():
     from models import check_password
 
     if user is None or not check_password(password, user['hasloHash']):
-        return jsonify({'error': 'Nieprawidłowy login lub hasło'}), 401
+        return jsonify({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": 401,
+            "error": "Unauthorized",
+            "message": "Nieprawidłowy login lub hasło"
+        }), 401
 
     token = jwt.encode({
         'user_id': user['id'],
         'exp': datetime.now(timezone.utc) + timedelta(hours=1)
     }, SECRET_KEY, algorithm='HS256')
 
-    return jsonify({'token': token})
+    return jsonify({'token': token}), 200
 
 @app.route('/home')
 def home_page():

@@ -1,3 +1,4 @@
 [
-  "tests/test_auth.py::test_register_and_login"
+  "tests/test_auth.py::test_register_and_login",
+  "tests/test_auth.py::test_register_validation_errors"
 ]
