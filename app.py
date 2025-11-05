@@ -60,6 +60,14 @@ def get_zadanie(id):
         return jsonify({'error': 'Zadanie nie znalezione'}), 404
     return jsonify(dict(zadanie)), 200
 
+@app.route('/deploy', methods=['POST'])
+def deploy():
+    import subprocess
+    subprocess.run(["git", "pull"])
+    subprocess.run(["touch", "/var/www/LoYs_pythonanywhere_com_wsgi.py"])
+    return "OK", 200
+
+
 @app.route('/api/zadania', methods=['POST'])
 @token_required
 def create_zadanie():
