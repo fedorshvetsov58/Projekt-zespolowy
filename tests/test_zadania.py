@@ -3,6 +3,20 @@ import jwt
 from datetime import datetime, timedelta
 from app import SECRET_KEY
 
+
+@pytest.fixture
+def client():
+    app.config["TESTING"] = True
+    with app.app_context():
+        init_db()
+        conn = get_db_connection()
+        conn.execute("DELETE FROM zadania")
+        conn.execute("DELETE FROM users")
+        conn.commit()
+        conn.close()
+    with app.test_client() as client:
+        yield client
+
 def make_token():
     return jwt.encode({"user_id": 1, "exp": datetime.utcnow() + timedelta(hours=1)}, SECRET_KEY, algorithm="HS256")
 
