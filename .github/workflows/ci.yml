@@ -36,6 +36,7 @@ jobs:
           host: ${{ secrets.PA_SSH_HOST }}
           username: ${{ secrets.PA_SSH_USER }}
           key: ${{ secrets.PA_SSH_KEY }}
+          port: 22
           script: |
             cd ~/Projekt-zespolowy
             git pull
