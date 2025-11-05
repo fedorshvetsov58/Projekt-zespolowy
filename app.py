@@ -9,7 +9,7 @@ from functools import wraps
 import sqlite3
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 
 with app.app_context():
