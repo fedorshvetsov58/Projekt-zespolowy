@@ -1,9 +1,11 @@
 import pytest
+from app import app
+from database import init_db, get_db_connection
 import json
 import jwt
 from datetime import datetime, timedelta
 from app import SECRET_KEY
-from app import app, get_db_connection
+
 
 
 @pytest.fixture
