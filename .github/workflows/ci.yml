@@ -24,20 +24,3 @@ jobs:
 
       - name: Run tests
         run: pytest -v
-
-  deploy:
-    needs: build_and_test
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-      - name: Deploy to PythonAnywhere
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.PA_SSH_HOST }}
-          username: ${{ secrets.PA_SSH_USER }}
-          key: ${{ secrets.PA_SSH_KEY }}
-          port: 22
-          script: |
-            cd ~/Projekt-zespolowy
-            git pull
-            touch /var/www/${{ secrets.PA_SSH_USER }}_pythonanywhere_com_wsgi.py
