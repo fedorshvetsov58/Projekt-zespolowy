@@ -40,6 +40,10 @@ def home():
 def zadania_page():
     return render_template('index.html')
 
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/api/zadania', methods=['GET'])
 def get_zadania():
     conn = get_db_connection()
@@ -63,6 +67,10 @@ def create_zadanie():
     required = ['tytul', 'opis', 'deadline', 'priorytet']
     if not all(field in data for field in required):
         return jsonify({'error': 'Brakuje pól'}), 400
+    
+    if len(data['tytul']) < 3 or len(data['opis']) < 10:
+        return jsonify({'error': 'Niepoprawne dane'}), 400
+    
     conn = get_db_connection()
     cur = conn.execute(
         'INSERT INTO zadania (tytul, opis, deadline, priorytet) VALUES (?, ?, ?, ?)',
@@ -131,10 +139,10 @@ def register():
     if field_errors:
         return jsonify({
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "status": 422,
+            "status": 400,
             "error": "Unprocessable Entity",
             "fieldErrors": field_errors
-        }), 422
+        }), 400
 
     conn = get_db_connection()
     existing = conn.execute('SELECT * FROM users WHERE login=?', (login,)).fetchone()

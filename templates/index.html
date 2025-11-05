@@ -75,19 +75,19 @@
         } catch (err) {
           showError(err.message);
         }
-      }
 
-      const buttons = list.querySelectorAll('button');
-      buttons.forEach(btn => {
-        if (
-          !token &&
-          (btn.innerText === 'Edytuj' || btn.innerText === 'Usuń')
-        ) {
-          btn.style.display = 'none';
-        } else {
-          btn.style.display = 'inline';
-        }
-      });
+        const buttons = list.querySelectorAll('button');
+        buttons.forEach(btn => {
+          if (
+            !token &&
+            (btn.innerText === 'Edytuj' || btn.innerText === 'Usuń')
+          ) {
+            btn.style.display = 'none';
+          } else {
+            btn.style.display = 'inline';
+          }
+        });
+      }
 
       async function addZadanie() {
         if (!validateZadanieForm()) return;

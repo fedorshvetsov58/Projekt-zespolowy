@@ -16,12 +16,12 @@ def test_register_validation_errors(client):
     assert res.status_code == 422
     assert any(err["field"] == "password" for err in res.json["fieldErrors"])
 
-    # niepoprawny login (spacja)
+    # niepoprawny login
     res2 = client.post("/register", json={"login": "ab c", "password": "123456"})
     assert res2.status_code == 422
     assert any(err["field"] == "login" for err in res2.json["fieldErrors"])
 
-    # poprawny login (bez spacji i bez podkreślnika)
+    # poprawny login
     name = f"validuser{random.randint(1,1000)}"
     res3 = client.post("/register", json={"login": name, "password": "123456"})
     assert res3.status_code == 201
