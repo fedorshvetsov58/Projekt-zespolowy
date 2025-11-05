@@ -34,7 +34,7 @@ def token_required(f):
 
 @app.route('/')
 def home():
-    return "Flask dziala")
+    return "Flask dziala"
 # return render_template('home.html')
 
 @app.route('/zadania')
