@@ -3,6 +3,7 @@ import json
 import jwt
 from datetime import datetime, timedelta
 from app import SECRET_KEY
+from app import app, get_db_connection
 
 
 @pytest.fixture
