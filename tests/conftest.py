@@ -1,6 +1,7 @@
 import pytest
 from app import app
-from database import init_db
+from database import init_db, get_db_connection
+from app import app
 import os
 import tempfile
 

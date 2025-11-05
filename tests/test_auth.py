@@ -2,6 +2,10 @@ import random
 import pytest
 import sys
 import os
+import pytest
+from app import app
+from database import init_db, get_db_connection
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app import app
