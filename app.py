@@ -139,10 +139,10 @@ def register():
     if field_errors:
         return jsonify({
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "status": 400,
+            "status": 422,
             "error": "Unprocessable Entity",
             "fieldErrors": field_errors
-        }), 400
+        }), 422
 
     conn = get_db_connection()
     existing = conn.execute('SELECT * FROM users WHERE login=?', (login,)).fetchone()
