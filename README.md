@@ -2,7 +2,7 @@
 
 Mały projekt napisany w **Flask + SQLite**.  
 Pozwala **dodawać, edytować, usuwać i przeglądać zadania** przez prostą stronę w przeglądarce.
-Link:https://loys.pythonanywhere.com/
+Link: https://projekt-zespolowy-3n1a.onrender.com
 
 # Wymagania
 - Python 3.11+
