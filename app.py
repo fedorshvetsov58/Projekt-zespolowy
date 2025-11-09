@@ -60,27 +60,6 @@ def get_zadanie(id):
         return jsonify({'error': 'Zadanie nie znalezione'}), 404
     return jsonify(dict(zadanie)), 200
 
-@app.route('/deploy', methods=['POST'])
-def deploy():
-
-    signature = request.headers.get('X-Hub-Signature-256')
-    if not signature:
-        abort(403)
-
-    sha_name, signature = signature.split('=')
-    if sha_name != 'sha256':
-        abort(403)
-
-    mac = hmac.new(GITHUB_SECRET.encode(), msg=request.data, digestmod=hashlib.sha256)
-    if not hmac.compare_digest(mac.hexdigest(), signature):
-        abort(403)
-
-    subprocess.run(["git", "pull"])
-    subprocess.run(["touch", "/var/www/LoYs_pythonanywhere_com_wsgi.py"])
-
-    return "Deployed successfully", 200
-
-
 @app.route('/api/zadania', methods=['POST'])
 @token_required
 def create_zadanie():
