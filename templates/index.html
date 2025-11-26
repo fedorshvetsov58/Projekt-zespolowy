@@ -1,329 +1,439 @@
 <!DOCTYPE html>
 <html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Zarządzanie Zadaniami</title>
-    <link rel="stylesheet" href="/static/style.css" />
-    <script>
-      let editingId = null;
-      let token = null;
+  <head>
+    <meta charset="UTF-8" />
+    <title>Zarządzanie Zadaniami</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script>
+      let editingId = null;
+      let token = null;
 
-      function showError(message) {
-        const errorBox = document.getElementById('errorBox');
-        errorBox.innerText = message;
-        errorBox.style.display = 'block';
-        setTimeout(() => {
-          errorBox.style.display = 'none';
-        }, 4000);
-      }
+      function showError(message) {
+        const errorBox = document.getElementById('errorBox');
+        errorBox.innerText = message;
+        errorBox.style.display = 'block';
+        setTimeout(() => {
+          errorBox.style.display = 'none';
+        }, 4000);
+      }
 
-      function validateZadanieForm() {
-        const tytul = document.getElementById('tytul').value.trim();
-        const opis = document.getElementById('opis').value.trim();
-        const deadline = document.getElementById('deadline').value;
-        const priorytet = document
-          .getElementById('priorytet')
-          .value.trim()
-          .toLowerCase();
+      function validateZadanieForm() {
+        const tytul = document.getElementById('tytul').value.trim();
+        const opis = document.getElementById('opis').value.trim();
+        const deadline = document.getElementById('deadline').value;
+        const priorytet = document
+          .getElementById('priorytet')
+          .value.trim()
+          .toLowerCase();
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
 
-        if (tytul.length < 3 || tytul.length > 50) {
-          showError('Tytuł musi mieć od 3 do 50 znaków.');
-          return false;
-        }
-        if (opis.length < 10 || opis.length > 200) {
-          showError('Opis musi mieć od 10 do 200 znaków.');
-          return false;
-        }
-        if (!deadline) {
-          showError('Musisz podać datę zakończenia.');
-          return false;
-        }
-        if (deadline < today) {
-          showError('Data nie może być wcześniejsza niż dzisiaj.');
-          return false;
-        }
-        const validPriorytety = ['niski', 'średni', 'sredni', 'wysoki'];
-        if (!validPriorytety.includes(priorytet)) {
-          showError(
-            'Priorytet musi być jednym z: "niski", "średni", "wysoki".',
-          );
-          return false;
-        }
-        return true;
-      }
+        if (tytul.length < 3 || tytul.length > 50) {
+          showError('Tytuł musi mieć od 3 do 50 znaków.');
+          return false;
+        }
+        if (opis.length < 10 || opis.length > 200) {
+          showError('Opis musi mieć od 10 do 200 znaków.');
+          return false;
+        }
+        if (!deadline) {
+          showError('Musisz podać datę zakończenia.');
+          return false;
+        }
+        if (deadline < today) {
+          showError('Data nie może być wcześniejsza niż dzisiaj.');
+          return false;
+        }
+        const validPriorytety = ['niski', 'średni', 'sredni', 'wysoki'];
+        if (!validPriorytety.includes(priorytet)) {
+          showError(
+            'Priorytet musi być jednym z: "niski", "średni", "wysoki".',
+          );
+          return false;
+        }
+        return true;
+      }
 
-      async function loadZadania() {
-        try {
-          const res = await fetch('/api/zadania');
-          const zadania = await res.json();
-          const list = document.getElementById('zadania');
-          list.innerHTML = zadania
-            .map(
-              z => `
-          <li>
-            <strong>${z.tytul}</strong> (${z.priorytet})<br>
-            ${z.opis}<br>
-            Termin: ${z.deadline}<br>
-            <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}')">Edytuj</button>
-            <button onclick="deleteZadanie(${z.id})">Usuń</button>
-          </li>
-        `,
-            )
-            .join('');
-        } catch (err) {
-          showError(err.message);
-        }
+      async function loadZadania() {
+        try {
+          const res = await fetch('/api/zadania');
+          const zadania = await res.json();
+          const list = document.getElementById('zadania');
+          list.innerHTML = zadania
+            .map(
+              z => `
+          <li>
+            <strong>${z.tytul}</strong> (${z.priorytet})<br>
+            ${z.opis}<br>
+            Termin: ${z.deadline}<br>
+            <button onclick="editZadanie(${z.id}, '${z.tytul}', '${z.opis}', '${z.deadline}', '${z.priorytet}')">Edytuj</button>
+            <button onclick="deleteZadanie(${z.id})">Usuń</button>
+          </li>
+        `,
+            )
+            .join('');
+        } catch (err) {
+          showError(err.message);
+        }
 
-        const buttons = list.querySelectorAll('button');
-        buttons.forEach(btn => {
-          if (
-            !token &&
-            (btn.innerText === 'Edytuj' || btn.innerText === 'Usuń')
-          ) {
-            btn.style.display = 'none';
-          } else {
-            btn.style.display = 'inline';
-          }
-        });
-      }
+        const buttons = list.querySelectorAll('button');
+        buttons.forEach(btn => {
+          if (
+            !token &&
+            (btn.innerText === 'Edytuj' || btn.innerText === 'Usuń')
+          ) {
+            btn.style.display = 'none';
+          } else {
+            btn.style.display = 'inline';
+          }
+        });
+      }
 
-      async function addZadanie() {
-        if (!validateZadanieForm()) return;
-        const tytul = document.getElementById('tytul').value;
-        const opis = document.getElementById('opis').value;
-        const deadline = document.getElementById('deadline').value;
-        const priorytet = document.getElementById('priorytet').value;
+      async function addZadanie() {
+        if (!validateZadanieForm()) return;
+        const tytul = document.getElementById('tytul').value;
+        const opis = document.getElementById('opis').value;
+        const deadline = document.getElementById('deadline').value;
+        const priorytet = document.getElementById('priorytet').value;
 
-        try {
-          const headers = {
-            'Content-Type': 'application/json',
-          };
-          if (token) headers['Authorization'] = 'Bearer ' + token;
+        try {
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+          if (token) headers['Authorization'] = 'Bearer ' + token;
 
-          if (editingId) {
-            // tryb edycji
-            await fetch('/api/zadania/' + editingId, {
-              method: 'PUT',
-              headers: headers,
-              body: JSON.stringify({ tytul, opis, deadline, priorytet }),
-            });
-            editingId = null;
-            document.getElementById('addBtn').innerText = 'Dodaj';
-          } else {
-            // tryb dodawania
-            await fetch('/api/zadania', {
-              method: 'POST',
-              headers: headers,
-              body: JSON.stringify({ tytul, opis, deadline, priorytet }),
-            });
-          }
+          if (editingId) {
+            // tryb edycji
+            await fetch('/api/zadania/' + editingId, {
+              method: 'PUT',
+              headers: headers,
+              body: JSON.stringify({ tytul, opis, deadline, priorytet }),
+            });
+            editingId = null;
+            document.getElementById('addBtn').innerText = 'Zapisz zmiany';
+          } else {
+            // tryb dodawania
+            await fetch('/api/zadania', {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({ tytul, opis, deadline, priorytet }),
+            });
+          }
 
-          clearForm();
-          loadZadania();
-        } catch (err) {
-          showError('Nie udało się zapisać zadania');
-        }
-      }
+          clearForm();
+          loadZadania();
+        } catch (err) {
+          showError('Nie udało się zapisać zadania');
+        }
+      }
 
-      function editZadanie(id, tytul, opis, deadline, priorytet) {
-        document.getElementById('tytul').value = tytul;
-        document.getElementById('opis').value = opis;
-        document.getElementById('deadline').value = deadline;
-        document.getElementById('priorytet').value = priorytet;
-        document.getElementById('addBtn').innerText = 'Zapisz zmiany';
-        editingId = id;
-      }
+      function editZadanie(id, tytul, opis, deadline, priorytet) {
+        document.getElementById('tytul').value = tytul;
+        document.getElementById('opis').value = opis;
+        document.getElementById('deadline').value = deadline;
+        document.getElementById('priorytet').value = priorytet;
+        document.getElementById('addBtn').innerText = 'Zapisz zmiany';
+        editingId = id;
+      }
 
-      async function deleteZadanie(id) {
-        const headers = {};
-        if (token) headers['Authorization'] = 'Bearer ' + token;
+      async function deleteZadanie(id) {
+        const headers = {};
+        if (token) headers['Authorization'] = 'Bearer ' + token;
 
-        await fetch('/api/zadania/' + id, {
-          method: 'DELETE',
-          headers,
-        });
-        loadZadania();
-      }
+        await fetch('/api/zadania/' + id, {
+          method: 'DELETE',
+          headers,
+        });
+        loadZadania();
+      }
 
-      function clearForm() {
-        document.getElementById('tytul').value = '';
-        document.getElementById('opis').value = '';
-        document.getElementById('deadline').value = '';
-        document.getElementById('priorytet').value = '';
-      }
+      function clearForm() {
+        document.getElementById('tytul').value = '';
+        document.getElementById('opis').value = '';
+        document.getElementById('deadline').value = '';
+        document.getElementById('priorytet').value = '';
+      }
 
-      async function login() {
-        const loginVal = document.getElementById('login').value;
-        const passwordVal = document.getElementById('password').value;
+      async function login() {
+        const loginVal = document.getElementById('login').value;
+        const passwordVal = document.getElementById('password').value;
 
-        const loginPattern = /^[a-zA-Z0-9]{3,20}$/;
-        if (!loginPattern.test(loginVal)) {
-          showError('Login może zawierać tylko litery i cyfry (3-20 znaków).');
-          return;
-        }
-        if (passwordVal.length < 6) {
-          showError('Hasło musi mieć co najmniej 6 znaków.');
-          return;
-        }
+        const loginPattern = /^[a-zA-Z0-9]{3,20}$/;
+        if (!loginPattern.test(loginVal)) {
+          showError('Login może zawierać tylko litery i cyfry (3-20 znaków).');
+          return;
+        }
+        if (passwordVal.length < 6) {
+          showError('Hasło musi mieć co najmniej 6 znaków.');
+          return;
+        }
 
-        const res = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login: loginVal, password: passwordVal }),
-        });
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login: loginVal, password: passwordVal }),
+        });
 
-        const data = await res.json();
-        if (res.status === 200) {
-          token = data.token;
-          alert('Zalogowano pomyślnie!');
-          loadZadania();
-        } else {
-          showError(data.error);
-        }
-      }
+        const data = await res.json();
+        if (res.status === 200) {
+          token = data.token;
+          alert('Zalogowano pomyślnie!');
+          loadZadania();
+        } else {
+          showError(data.error);
+        }
+      }
 
-      async function register() {
-        const loginVal = document.getElementById('reg_login').value.trim();
-        const passwordVal = document
-          .getElementById('reg_password')
-          .value.trim();
+      async function register() {
+        const loginVal = document.getElementById('reg_login').value.trim();
+        const passwordVal = document
+          .getElementById('reg_password')
+          .value.trim();
 
-        const loginPattern = /^[a-zA-Z0-9]{3,20}$/;
-        if (!loginPattern.test(loginVal)) {
-          showError('Login może zawierać tylko litery i cyfry (3-20 znaków).');
-          return;
-        }
-        if (passwordVal.length < 6) {
-          showError('Hasło musi mieć co najmniej 6 znaków.');
-          return;
-        }
+        const loginPattern = /^[a-zA-Z0-9]{3,20}$/;
+        if (!loginPattern.test(loginVal)) {
+          showError('Login może zawierać tylko litery i cyfry (3-20 znaków).');
+          return;
+        }
+        if (passwordVal.length < 6) {
+          showError('Hasło musi mieć co najmniej 6 znaków.');
+          return;
+        }
 
-        const res = await fetch('/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login: loginVal, password: passwordVal }),
-        });
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login: loginVal, password: passwordVal }),
+        });
 
-        const data = await res.json();
-        if (res.status === 201) {
-          alert('Konto utworzone pomyślnie! Teraz możesz się zalogować.');
-        } else {
-          showError(data.error);
-        }
-      }
+        const data = await res.json();
+        if (res.status === 201) {
+          alert('Konto utworzone pomyślnie! Teraz możesz się zalogować.');
+        } else {
+          showError(data.error);
+        }
+      }
+    
+      // --- FUNKCJE DLA INTEGRACJI POGODY ---
+      
+      function updateWeatherUI(loading, data = null, error = null) {
+        const resultBox = document.getElementById('weatherResult');
+        const status = document.getElementById('weatherStatus');
+        const info = document.getElementById('currentWeatherInfo');
+        const forecastList = document.getElementById('hourlyForecast');
 
-      window.onload = loadZadania;
-    </script>
-  </head>
-  <body>
-    <div class="page-background">
-      <div class="content-wrapper">
-        <header>
-          <div class="container">
-            <div class="header-container">
-              <img
-                src="/static/images/Logo_proj_zesp.png"
-                alt="Logo"
-                class="img-logo"
-              />
-              <h1 class="main-title">Proces uwierzytelniania</h1>
-            </div>
-          </div>
-        </header>
+        resultBox.style.display = 'block';
+        info.innerHTML = '';
+        forecastList.innerHTML = '';
 
-        <div id="errorBox"></div>
+        if (loading) {
+          status.innerText = 'Ładowanie prognozy...';
+          status.style.color = '#0e7490'; // info color
+        } else if (error) {
+          status.innerText = `Błąd: ${error.error || error.message || 'Nieznany błąd.'}`;
+          status.style.color = '#dc2626'; // error color
+        } else if (data) {
+          status.innerText = `Aktualna prognoza dla: ${data.city_display}`;
+          status.style.color = '#059669'; // success color
 
-        <main>
-          <section class="section">
-            <div class="container">
-              <div class="log-rejestr">
-                <div class="card log">
-                  <h2>Logowanie</h2>
-                  <input
-                    id="login"
-                    placeholder="Login"
-                    required
-                    minlength="3"
-                    maxlength="20"
-                    pattern="[A-Za-z0-9]+"
-                  />
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Hasło"
-                    required
-                    minlength="6"
-                  />
-                  <button onclick="login()">Zaloguj się</button>
-                </div>
+          info.innerHTML = `
+            <strong>Temp. aktualna:</strong> ${data.current_temp}°C<br>
+            <strong>Wiatr:</strong> ${data.current_windspeed} km/h
+          `;
 
-                <div class="card rejestracja">
-                  <h2>Rejestracja</h2>
-                  <input
-                    id="reg_login"
-                    placeholder="Login"
-                    required
-                    minlength="3"
-                    maxlength="20"
-                    pattern="[A-Za-z0-9]+"
-                  />
-                  <input
-                    id="reg_password"
-                    type="password"
-                    placeholder="Hasło"
-                    required
-                    minlength="6"
-                  />
-                  <button onclick="register()">Zarejestruj się</button>
-                </div>
-              </div>
-            </div>
-          </section>
+          data.hourly_temps.forEach((item, index) => {
+            const li = document.createElement('li');
+            // Formatowanie часу UTC na lokalny czas
+            const time = new Date(item.time).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            li.innerText = `⏰ ${time}: ${item.temp}°C`;
+            li.style.listStyleType = 'none';
+            li.style.padding = '3px 0';
+            if (index === 0) li.style.fontWeight = 'bold';
+            forecastList.appendChild(li);
+          });
+        }
+      }
 
-          <section class="section">
-            <div class="container">
-              <div class="card add-zad">
-                <h2>Dodaj / Edytuj zadanie</h2>
-                <input
-                  id="tytul"
-                  placeholder="Tytuł"
-                  required
-                  minlength="3"
-                  maxlength="50"
-                />
-                <input
-                  id="opis"
-                  placeholder="Opis"
-                  required
-                  minlength="10"
-                  maxlength="200"
-                />
-                <input id="deadline" type="date" required />
-                <input
-                  id="priorytet"
-                  placeholder="Priorytet (niski/średni/wysoki)"
-                  required
-                  pattern="(niski|średni|sredni|wysoki)"
-                />
-                <button id="addBtn" onclick="addZadanie()">Dodaj</button>
-              </div>
-            </div>
-          </section>
+      async function getWeather() {
+        const city = document.getElementById('weatherCity').value.trim();
+        const lat = document.getElementById('weatherLat').value.trim();
+        const lon = document.getElementById('weatherLon').value.trim();
+        
+        let url = '/external/weather';
+        
+        if (city) {
+          url += `?city=${encodeURIComponent(city)}`;
+        } else if (lat && lon) {
+          url += `?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+        } else {
+          showError('Wprowadź nazwę miasta lub współrzędne (szerokość i długość).');
+          return;
+        }
 
-          <section class="section">
-            <div class="container">
-              <div class="card lista-zad">
-                <h2>Lista Zadań</h2>
-                <ul id="zadania"></ul>
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-    </div>
+        updateWeatherUI(true); // Stan ładowania
 
-    <!-- авыа -->
-  </body>
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          
+          if (res.status === 200) {
+            updateWeatherUI(false, data);
+          } else {
+            updateWeatherUI(false, null, data); // Wyświetlenie błędu z backendu
+          }
+        } catch (error) {
+          console.error('Błąd sieci:', error);
+          updateWeatherUI(false, null, { error: 'Błąd sieci: nie można połączyć się z backendem.' });
+        }
+      }
+
+      window.onload = loadZadania;
+    </script>
+  </head>
+  <body>
+    <div class="page-background">
+      <div class="content-wrapper">
+        <header>
+          <div class="container">
+            <div class="header-container">
+              <img
+                src="/static/images/Logo_proj_zesp.png"
+                alt="Logo"
+                class="img-logo"
+              />
+              <h1 class="main-title">Proces uwierzytelniania</h1>
+            </div>
+          </div>
+        </header>
+
+        <div id="errorBox"></div>
+
+        <main>
+          <section class="section">
+            <div class="container">
+              <div class="log-rejestr">
+                <div class="card log">
+                  <h2>Logowanie</h2>
+                  <input
+                    id="login"
+                    placeholder="Login"
+                    required
+                    minlength="3"
+                    maxlength="20"
+                    pattern="[A-Za-z0-9]+"
+                  />
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Hasło"
+                    required
+                    minlength="6"
+                  />
+                  <button onclick="login()">Zaloguj się</button>
+                </div>
+
+                <div class="card rejestracja">
+                  <h2>Rejestracja</h2>
+                  <input
+                    id="reg_login"
+                    placeholder="Login"
+                    required
+                    minlength="3"
+                    maxlength="20"
+                    pattern="[A-Za-z0-9]+"
+                  />
+                  <input
+                    id="reg_password"
+                    type="password"
+                    placeholder="Hasło"
+                    required
+                    minlength="6"
+                  />
+                  <button onclick="register()">Zarejestruj się</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="container">
+              <div class="card add-zad">
+                <h2>Dodaj / Edytuj zadanie</h2>
+                <input
+                  id="tytul"
+                  placeholder="Tytuł"
+                  required
+                  minlength="3"
+                  maxlength="50"
+                />
+                <input
+                  id="opis"
+                  placeholder="Opis"
+                  required
+                  minlength="10"
+                  maxlength="200"
+                />
+                <input id="deadline" type="date" required />
+                <input
+                  id="priorytet"
+                  placeholder="Priorytet (niski/średni/wysoki)"
+                  required
+                  pattern="(niski|średni|sredni|wysoki)"
+                />
+                <button id="addBtn" onclick="addZadanie()">Dodaj</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="container">
+              <div class="card lista-zad">
+                <h2>Lista Zadań</h2>
+                <ul id="zadania"></ul>
+              </div>
+            </div>
+          </section>
+        
+                    <section class="section">
+            <div class="container">
+              <div class="card add-zad">
+                <h2>Integracja Zewnętrzna: Prognoza Pogody</h2>
+                
+                <div class="weather-form-controls">
+                  <input
+                    id="weatherCity"
+                    placeholder="Miasto (np. Warszawa)"
+                    style="width: 48%; display: inline-block; margin-right: 2%;"
+                  />
+                  <input
+                    id="weatherLat"
+                    placeholder="Szer. (np. 52.23)"
+                    type="number"
+                    step="0.01"
+                    style="width: 24%; display: inline-block; margin-right: 2%;"
+                  />
+                  <input
+                    id="weatherLon"
+                    placeholder="Dł. (np. 21.01)"
+                    type="number"
+                    step="0.01"
+                    style="width: 24%; display: inline-block;"
+                  />
+                </div>
+                
+                <button onclick="getWeather()">Pobierz pogodę</button>
+
+                <div id="weatherResult" class="card" style="display: none; padding: 10px; margin-top: 15px; background: #e0f2f1;">
+                  <p id="weatherStatus" style="font-weight: bold; margin-bottom: 5px;"></p>
+                  <p id="currentWeatherInfo"></p>
+                  <ul id="hourlyForecast" style="margin-top: 10px;"></ul>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+      </body>
 </html>

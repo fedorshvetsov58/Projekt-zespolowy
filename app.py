@@ -7,7 +7,9 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 import sqlite3
+import requests
 
+from weather_service import WeatherClient, InvalidInputError, ServiceUnavailableError, BadGatewayError
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
@@ -16,6 +18,8 @@ with app.app_context():
     init_db()
 
 SECRET_KEY = "tajny_klucz_do_jwt"
+
+weather_client = WeatherClient()
 
 def token_required(f):
     @wraps(f)
@@ -201,6 +205,62 @@ def login():
 @app.route('/home')
 def home_page():
     return render_template('home.html')
+
+@app.route('/external/weather', methods=['GET'])
+def get_external_weather():
+    """
+    Endpoint do pobierania pogody. 
+    Oczekuje: city=<Nazwa> lub lat=<Szer>&lon=<Dług>
+    """
+    city = request.args.get('city')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+
+    try:
+        # Змінна для відображення назви міста у фронтенді
+        city_display = "Koordynaty" 
+        
+        if city:
+            # 1. Якщо дано місто, знаходимо координати
+            coords = weather_client.get_coordinates_by_city(city)
+            latitude = coords['latitude']
+            longitude = coords['longitude']
+            city_display = coords['city_display']
+            
+        elif lat and lon:
+            # 2. Якщо дано координати
+            try:
+                latitude = float(lat)
+                longitude = float(lon)
+            except ValueError:
+                raise InvalidInputError("Współrzędne (lat, lon) muszą być liczbami.")
+        else:
+            # 3. Брак необхідних параметрів -> 400 Bad Request
+            return jsonify({'error': 'Wymagane parametry: \'city\' lub \'lat\' i \'lon\''}), 400
+        
+        # 4. Викликаємо сервіс для отримання прогнозу
+        forecast = weather_client.get_forecast(latitude, longitude)
+        forecast['city_display'] = city_display # Додаємо назву міста до відповіді
+        
+        # 5. Повертаємо спрощений JSON
+        return jsonify(forecast), 200
+
+    # 6. Обробка помилок та мапінг на HTTP-коди
+    except InvalidInputError as e:
+        # Błędne parametry (400 Bad Request)
+        return jsonify({'error': str(e)}), 400
+    
+    except ServiceUnavailableError as e:
+        # Brak odpowiedzi / timeout (503 Service Unavailable)
+        return jsonify({'error': str(e)}), 503
+        
+    except BadGatewayError as e:
+        # Błąd po stronie zewnętrznego API (502 Bad Gateway)
+        return jsonify({'error': str(e)}), 502
+    
+    except Exception as e:
+        app.logger.error(f"Nieoczekiwany błąd w API pogody: {e}")
+        return jsonify({'error': 'Wewnętrzny błąd serwera.'}), 500
 
 
 if __name__ == '__main__':
