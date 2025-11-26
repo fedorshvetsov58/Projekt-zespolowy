@@ -59,11 +59,11 @@ WEATHER_MOCK_SUCCESS = {
     "hourly_units": {"temperature_2m": "°C"}
 }
 
-GEOCODING_MOCK_SUCCESS = {
-    "results": [
-        {"latitude": 52.23, "longitude": 21.01, "name": "Warszawa"}
-    ]
-}
+# GEOCODING_MOCK_SUCCESS = {
+#     "results": [
+#         {"latitude": 52.23, "longitude": 21.01, "name": "Warszawa"}
+#     ]
+# }
 
 def mock_response(status_code, json_data=None):
     """Pomocnicza funkcja do tworzenia odpowiedzi Mock."""
@@ -77,8 +77,9 @@ def test_weather_happy_path_city(client, mocker):
     """Test integracyjny: poprawne dane dla miasta -> 200 OK."""
     # Мокуємо Geocoding, потім Forecast
     mocker.patch('weather_service.WeatherClient.get_coordinates_by_city', 
-                 return_value=GEOCODING_MOCK_SUCCESS['results'][0])
-    mocker.patch('weather_service.requests.get', return_value=mock_response(200, WEATHER_MOCK_SUCCESS))
+                return_value={'latitude': 52.23, 'longitude': 21.01, 'city_display': 'Warszawa'})
+    mocker.patch('weather_service.WeatherClient.get_forecast', 
+                return_value=WEATHER_MOCK_SUCCESS)
 
     res = client.get('/external/weather?city=Warszawa')
     assert res.status_code == 200
